@@ -27,6 +27,36 @@
     <title>React App</title>
   </head>
   <body>
+    <script>
+      const originalWebSocket = window.WebSocket;
+      class CustomizedWebSocket extends originalWebSocket {
+        constructor(...args) {
+          super('ws://localhost:9876/websocket');
+          let stack;
+          try {
+            throw new Error('');
+          } catch (e) {
+            stack = e.stack;
+          }
+          this.addEventListener('open', () => {
+            console.log('open');
+            this.send(JSON.stringify({
+              type: 'connect',
+              args,
+              stack,
+            }));
+          });
+          this.addEventListener('error', err => {
+            console.error('error', err);
+          });
+        }
+      }
+      Object.defineProperty(window, 'WebSocket', {
+        get() {
+          return CustomizedWebSocket;
+        },
+      });
+    </script>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <!--
